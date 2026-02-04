@@ -146,8 +146,17 @@ ggcorrplot(cor_matrix, lab = TRUE, colors = c("blue", "white", "red"))
 #########################################################################
 
 # 0. PRÉPARATION DES DONNÉES
+
 # On filtre les réservations non-annulées
 data_gamma <- data %>% filter(reservation_status == "Not_Canceled")
+
+# Filtrage des outliers (Méthode IQR)
+Q1 <- quantile(data_gamma$lead_time, 0.25)
+Q3 <- quantile(data_gamma$lead_time, 0.75)
+IQR_val <- Q3 - Q1
+limite_sup <- Q3 + 1.5 * IQR_val
+
+
 
 # La loi Gamma exige y > 0. Correction pour les lead_time nuls
 data_gamma$lead_time_gamma <- ifelse(data_gamma$lead_time == 0, 0.5, data_gamma$lead_time)
@@ -155,7 +164,7 @@ data_gamma$lead_time_gamma <- ifelse(data_gamma$lead_time == 0, 0.5, data_gamma$
 # 1. ANALYSE DESCRIPTIVE (Justification du choix de la loi Gamma)
 summary(data_gamma$lead_time_gamma)
 
-# Visualisation de l'asymétrie (Slide de présentation)
+# Visualisation de l'asymétrie 
 hist(data_gamma$lead_time_gamma, breaks = 40, prob = TRUE, 
      main = "Distribution du Délai", xlab = "Jours", col = "steelblue")
 lines(density(data_gamma$lead_time_gamma), col = "red", lwd = 2)
@@ -168,6 +177,12 @@ qqline(data_gamma$lead_time_gamma, col = "red")
 boxplot(lead_time_gamma ~ market_segment, data = data_gamma, 
         col = terrain.colors(5), main = "Dispersion du délai par segment",
         las = 2, cex.axis = 0.7)
+
+# Suppression des outliers identifiés
+data_gamma <- data_gamma %>% filter(lead_time_gamma <= limite_sup)
+
+# Vérifie la nouvelle taille de ton échantillon
+nrow(data_gamma)
 
 
 # 2. ÉTAPE A : LE MODÈLE INITIAL "COMPLET" (Exploratoire)
