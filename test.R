@@ -1,25 +1,33 @@
+
 # Nettoyage de l'environnement
+
 rm(list = ls())
 
-# Chargement des librairies nécessaires
-library(readxl)     # Lire les fichiers Excel
-library(dplyr)      # Manipulation de données
-library(ggplot2)    # Visualisation
-library(MASS)       # GLM Gamma
-library(car)        # Diagnostics
+
+# Chargement des librairies
+
+library(readxl)
+library(dplyr)
+library(ggplot2)
+library(MASS)
+library(car)
+library(ggcorrplot)
 
 
 
 # Importation des données
+
 data <- read_excel(file.choose())
 
 
-# Aperçu général
+#  Aperçu général
+
 str(data)
 summary(data)
 
 
-# Renommage des variables (bonne pratique professionnelle)
+# Renommage des variables
+
 data <- data %>%
   rename(
     booking_id = `Booking_ID`,
@@ -42,22 +50,22 @@ data <- data %>%
   )
 
 
-# Table de fréquences
+# Variable binaire d'annulation
+
+data$is_canceled <- ifelse(data$reservation_status == "Canceled", 1, 0)
+
+
+# Tableaux de fréquences
+
 table(data$reservation_status)
-
-
-# Création de la variable binaire is_canceled
-data$is_canceled <- ifelse(
-  data$reservation_status == "Canceled",
-  1,
-  0
-)
-
-#tableau de frequence
 table(data$is_canceled)
 prop.table(table(data$is_canceled))
 
-#visualization avec nbre d'obs
+
+# VISUALISATIONS ORIGINALES (CONSERVÉES)
+
+
+# Barplot nombre d'observations
 ggplot(data, aes(x = factor(is_canceled))) +
   geom_bar(fill = "steelblue") +
   labs(
@@ -66,18 +74,21 @@ ggplot(data, aes(x = factor(is_canceled))) +
     y = "Nombre de réservations"
   )
 
-#visualization avec pourcentage
+
+# Barplot pourcentage
 ggplot(data, aes(x = factor(is_canceled), y = after_stat(prop), group = 1)) +
   geom_bar(fill = "steelblue") +
   scale_y_continuous(labels = scales::percent) +
   labs(
     title = "Proportion des annulations de réservation",
-    x = "Statut (0 = Non annulée, 1 = Annulée)",
+    x = "Statut",
     y = "Proportion"
   )
 
 
-# Conversion des variables qualitatives en facteurs
+
+# Conversion en facteurs
+
 data <- data %>%
   mutate(
     meal_plan = as.factor(meal_plan),
@@ -87,20 +98,23 @@ data <- data %>%
   )
 
 
-#histogramme de delai (normalite) : 
+
+# Graphes EDA du délai 
+
+
+
+# Histogramme
 ggplot(data, aes(x = lead_time)) +
-  geom_histogram(
-    bins = 50,
-    fill = "darkorange",
-    color = "black"
-  ) +
+  geom_histogram(bins = 50, fill = "darkorange", color = "black") +
   labs(
     title = "Distribution du délai de réservation",
-    x = "Délai (jours avant l’arrivée)",
+    x = "Délai (jours)",
     y = "Fréquence"
   )
 
-#boxplot (outliers):
+
+
+# Boxplot outliers
 ggplot(data, aes(y = lead_time)) +
   geom_boxplot(fill = "lightblue") +
   labs(
@@ -108,14 +122,14 @@ ggplot(data, aes(y = lead_time)) +
     y = "Délai (jours)"
   )
 
-#moyenne vs median: 
-mean_lead <- mean(data$lead_time)
-median_lead <- median(data$lead_time)
 
-mean_lead
-median_lead
 
-#densite : 
+# Moyenne vs médiane
+mean(data$lead_time, na.rm = TRUE)
+median(data$lead_time, na.rm = TRUE)
+
+
+# Densité
 ggplot(data, aes(x = lead_time)) +
   geom_density(fill = "orange", alpha = 0.4) +
   labs(
@@ -124,19 +138,37 @@ ggplot(data, aes(x = lead_time)) +
     y = "Densité"
   )
 
-#boxplot delai selon statut de reservation : 
+
+# Boxplot délai selon statut
 ggplot(data, aes(x = factor(is_canceled), y = lead_time)) +
   geom_boxplot(fill = c("lightgreen", "salmon")) +
-  labs(title = "Délai de réservation selon le statut",
-       x = "Annulation",
-       y = "Délai (jours)")
+  labs(
+    title = "Délai de réservation selon le statut",
+    x = "Annulation",
+    y = "Délai (jours)"
+  )
 
 
-#heatmap correlation : 
-library(ggcorrplot)
-# Sélection des variables numériques explicitement avec dplyr
-num_vars <- dplyr::select(data, lead_time, adr, adults, children, special_requests)
-str(num_vars)
-cor_matrix <- cor(num_vars, use = "complete.obs") # ignore les NAs
-ggcorrplot(cor_matrix, lab = TRUE, colors = c("blue", "white", "red"))
+
+
+
+# Test de Welch
+
+
+# Statistiques descriptives
+data %>%
+  group_by(is_canceled) %>%
+  summarise(
+    moyenne = mean(lead_time),
+    mediane = median(lead_time),
+    ecart_type = sd(lead_time)
+  )
+
+# Test de Welch
+t.test(
+  lead_time ~ is_canceled,
+  data,
+  var.equal = FALSE
+)
+
 
