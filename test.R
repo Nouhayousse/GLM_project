@@ -321,7 +321,7 @@ legend("topright", legend=c("Observed", "Fitted"), col=c("black","red"), lwd=2)
 
 #plot(predict(modele, type='response'), rstandard(modele, type='deviance'))
 
-
+par(mfrow=c(2,2))
 plot(density(resid_response), main="Response residuals")
 plot(density(resid_pearson), main="Pearson residuals")
 plot(density(resid_dev), main="Deviance residuals")
@@ -360,12 +360,24 @@ for(pred in predictors){
 # -------------------------------
 # 6. Vérification de la fonction lien
 # -------------------------------
+
+par(mfrow=c(1,2))
 # Résidus travaillés (working residuals) vs linear predictor
 plot(modele$linear.predictors, resid_std,
      main="Working residuals vs Linear predictor",
      xlab="Linear predictor", ylab="Standardized deviance residuals")
 abline(h=0, lty=2, col="blue")
 lines(lowess(modele$linear.predictors, resid_std), col='red')
+
+
+resid_working <- resid(modele, type = "working")
+
+plot(modele$linear.predictors, resid_working,
+     main="Working residuals vs Linear predictor",
+     xlab="Linear predictor", ylab="Working residuals")
+abline(h=0, lty=2, col="blue")
+lines(lowess(modele$linear.predictors, resid_working), col='red')
+
 
 # -------------------------------
 # 7. Vérification de la distribution (Gamma)
@@ -388,15 +400,18 @@ plot( hatvalues(modele), type="h", las=1 )
 # Points à haute influence
 high_influence <- which(cooksd > 2*mean(cooksd, na.rm=TRUE))
 high_influence
+summary(data_gamma[high_influence, "lead_time_gamma"])
+length(high_influence)
 
 maxinfl <- which.max( cooks.distance(modele))
-maxin
+maxinfl
 
 maxhat <- which.max( hatvalues(modele))
 maxhat
 
-data_gamma[high_influence, ]
-summary(data_gamma[high_influence, "lead_time_gamma"])
+
+
+
 
 #modele_sans <- glm(..., data = data_gamma[-high_influence, ])
 data_sans_influence <- data_gamma[-high_influence, ]
