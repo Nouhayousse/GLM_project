@@ -376,14 +376,24 @@ qqline(resid_quant, col='red')
 # -------------------------------
 # 8. Outliers et observations influentes
 # -------------------------------
+par(mfrow=c(2,2))
 # Cook's distance
 cooksd <- cooks.distance(modele)
 plot(cooksd, type='h', main="Cook's distance")
 abline(h = 2*mean(cooksd, na.rm=TRUE), col='red', lty=2)
 
+
+plot( dffits(modele), type="h", las=1, ylab="DFFITS")
+plot( hatvalues(modele), type="h", las=1 ) 
 # Points à haute influence
 high_influence <- which(cooksd > 2*mean(cooksd, na.rm=TRUE))
 high_influence
+
+maxinfl <- which.max( cooks.distance(modele))
+maxin
+
+maxhat <- which.max( hatvalues(modele))
+maxhat
 
 data_gamma[high_influence, ]
 summary(data_gamma[high_influence, "lead_time_gamma"])
@@ -440,6 +450,10 @@ legend("topright",
 vif_values <- vif(modele)
 vif_values
 
+vif_values <- vif(modele_sans)
+vif_values
+
+
 # -------------------------------
 # 10. Pseudo R2 (McFadden)
 # -------------------------------
@@ -448,6 +462,11 @@ res_dev  <- modele$deviance
 pseudoR2 <- 1 - res_dev/null_dev
 pseudoR2
 
+
+null_dev <- modele_sans$null.deviance
+res_dev  <- modele_sans$deviance
+pseudoR2 <- 1 - res_dev/null_dev
+pseudoR2
 
 
 
