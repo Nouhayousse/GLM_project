@@ -297,11 +297,7 @@ modele <- modele_bic
 # -------------------------------
 # 1. Résidus de base
 # -------------------------------
-resid_response <- resid(modele, type='response')
-resid_pearson  <- resid(modele, type='pearson')
-resid_dev      <- resid(modele, type='deviance')
-resid_std      <- rstandard(modele, type='deviance')
-resid_quant    <- qresid(modele)  # nécessite statmod
+
 
 # -------------------------------
 # 2. Vérification des densités
@@ -311,17 +307,24 @@ resid_quant    <- qresid(modele)  # nécessite statmod
 dens_obs <- density(data_gamma$lead_time_gamma)
 dens_fitted <- density(predict(modele, type='response'))
 
- # Définir la limite Y en prenant le maximum des deux densités
-ymax <- max(dens_obs$y, dens_fitted$y) * 1.1  # un peu de marge pour le sommet
-
+# Définir la limite Y en prenant le maximum des deux densités
+ymax <- max(dens_obs$y, dens_fitted$y) * 1.1 
 # Plot avec axes ajustés
-plot(dens_obs, main="Density of observed lead_time_gamma", ylim=c(0, ymax))
+plot(dens_obs, main="Density of observed lead_time_gamma",
+     ylim=c(0, ymax))
 lines(dens_fitted, col='red', lwd=2)
-legend("topright", legend=c("Observed", "Fitted"), col=c("black","red"), lwd=2)
+legend("topright", legend=c("Observed", "Fitted"), 
+       col=c("black","red"), lwd=2)
 
 #plot(predict(modele, type='response'), rstandard(modele, type='deviance'))
 
-par(mfrow=c(2,2))
+# 1. Résidus de base
+resid_response <- resid(modele, type='response')
+resid_pearson  <- resid(modele, type='pearson')
+resid_dev      <- resid(modele, type='deviance')
+resid_std      <- rstandard(modele, type='deviance')
+resid_quant    <- qresid(modele)  # nécessite statmod
+# Les plots
 plot(density(resid_response), main="Response residuals")
 plot(density(resid_pearson), main="Pearson residuals")
 plot(density(resid_dev), main="Deviance residuals")
@@ -329,8 +332,11 @@ plot(density(resid_dev), main="Deviance residuals")
 # -------------------------------
 # 3. Indépendance des observations
 # -------------------------------
-plot(1:nrow(data_gamma), resid_std, col='gray', main="Independence check",
-     xlab="Observation order", ylab="Standardized deviance residuals")
+plot(1:nrow(data_gamma), resid_std, col='gray',
+     main="Independence check",
+     xlab="Observation order", 
+     ylab="Standardized deviance residuals")
+
 lines(lowess(resid_std), col="red")
 
 # -------------------------------
@@ -339,13 +345,15 @@ lines(lowess(resid_std), col="red")
 fitted_vals <- predict(modele, type='response')
 plot(fitted_vals, resid_std, main="Residuals vs Fitted",
      xlab="Fitted values", ylab="Standardized deviance residuals")
+
 abline(h=0, lty=2, col='blue')
 lines(lowess(fitted_vals, resid_std), col='red', lwd=2)
 
 # -------------------------------
 # 5. Résidus vs prédicteurs
 # -------------------------------
-predictors <- c("adr","adults","weekend_nights","weekday_nights","market_segment")
+predictors <- c("adr","adults","weekend_nights","weekday_nights",
+                "market_segment")
 par(mfrow=c(3,2))
 for(pred in predictors){
   if(is.factor(data_gamma[[pred]])){
@@ -356,6 +364,9 @@ for(pred in predictors){
     lines(lowess(data_gamma[[pred]], resid_std), col='red', lwd=2)
   }
 }
+predic<-"market_segment"
+boxplot(resid_std ~ data_gamma[[predic]], main=paste("Residuals vs", pred))
+
 
 # -------------------------------
 # 6. Vérification de la fonction lien
@@ -364,7 +375,7 @@ for(pred in predictors){
 par(mfrow=c(1,2))
 # Résidus travaillés (working residuals) vs linear predictor
 plot(modele$linear.predictors, resid_std,
-     main="Working residuals vs Linear predictor",
+     main="Standardized residuals vs Linear predictor",
      xlab="Linear predictor", ylab="Standardized deviance residuals")
 abline(h=0, lty=2, col="blue")
 lines(lowess(modele$linear.predictors, resid_std), col='red')
@@ -388,7 +399,7 @@ qqline(resid_quant, col='red')
 # -------------------------------
 # 8. Outliers et observations influentes
 # -------------------------------
-par(mfrow=c(2,2))
+par(mfrow=c(1,3))
 # Cook's distance
 cooksd <- cooks.distance(modele)
 plot(cooksd, type='h', main="Cook's distance")
@@ -399,15 +410,9 @@ plot( dffits(modele), type="h", las=1, ylab="DFFITS")
 plot( hatvalues(modele), type="h", las=1 ) 
 # Points à haute influence
 high_influence <- which(cooksd > 2*mean(cooksd, na.rm=TRUE))
-high_influence
 summary(data_gamma[high_influence, "lead_time_gamma"])
 length(high_influence)
 
-maxinfl <- which.max( cooks.distance(modele))
-maxinfl
-
-maxhat <- which.max( hatvalues(modele))
-maxhat
 
 
 
@@ -417,7 +422,8 @@ maxhat
 data_sans_influence <- data_gamma[-high_influence, ]
 
 modele_sans <- glm(
-  lead_time_gamma ~ adr + adults + weekend_nights + weekday_nights + market_segment,
+  lead_time_gamma ~ adr + adults + weekend_nights + weekday_nights 
+  + market_segment,
   family = Gamma(link = "log"),
   data = data_sans_influence
 )
@@ -440,21 +446,16 @@ fitted_sans <- fitted(modele_sans)
 summary(fitted_complet)
 summary(fitted_sans)
 
-par(mfrow = c(1,1))
-
 plot(density(fitted_complet),
-     main = "Fitted values: modèle complet vs sans observations influentes",
+     main = "modèle complet vs sans observations influentes",
      xlab = "Lead time ajusté",
      lwd = 2)
 
-lines(density(fitted_sans),
-      col = "red",
-      lwd = 2)
+lines(density(fitted_sans),col = "red",lwd = 2)
 
 legend("topright",
        legend = c("Modèle complet", "Sans influents"),
-       col = c("black", "red"),
-       lwd = 2)
+       col = c("black", "red"),lwd = 2)
 
 
 
@@ -462,8 +463,6 @@ legend("topright",
 # -------------------------------
 # 9. Colinéarité
 # -------------------------------
-vif_values <- vif(modele)
-vif_values
 
 vif_values <- vif(modele_sans)
 vif_values
@@ -472,12 +471,6 @@ vif_values
 # -------------------------------
 # 10. Pseudo R2 (McFadden)
 # -------------------------------
-null_dev <- modele$null.deviance
-res_dev  <- modele$deviance
-pseudoR2 <- 1 - res_dev/null_dev
-pseudoR2
-
-
 null_dev <- modele_sans$null.deviance
 res_dev  <- modele_sans$deviance
 pseudoR2 <- 1 - res_dev/null_dev
