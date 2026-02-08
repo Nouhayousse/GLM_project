@@ -1,6 +1,6 @@
 
 ####################################
-# Partie Doha , modele GLM binomial
+# Partie Doha Lamtougui , modele GLM binomial
 ################################################
 
 library(readxl)
@@ -137,7 +137,7 @@ roc_tree <- roc(data$Y, proba_tree)
 plot(roc_tree, legacy.axes = TRUE, main = "ROC Decision Tree")
 auc(roc_tree)
 
-#choisir meilleur seuille 
+#choisir meilleur seuil
 coords(
   roc_tree,
   x = "best",
@@ -352,6 +352,8 @@ legend("topright",
 # -------------------------------
 
 vif_values <- vif(model_bin_sans)
+vif_values
+vif_values <- vif(model)
 vif_values
 
 

@@ -1,5 +1,5 @@
 ############################################
-#  Partie Israe  EDA 
+#  Partie Israe yaaya  EDA 
 ##########################################
 
 
@@ -298,11 +298,11 @@ hist(residus_std, breaks = 30, main = "Distribution des résidus", col = "lightg
 
 library(ggplot2)
 library(gridExtra)
-library(statmod)   # pour quantile residuals
-library(MASS)      # pour fonctions glm.nb si besoin
-library(car)       # pour vif()
+library(statmod)   
+library(MASS)      
+library(car)       
 
-# Modèle final BIC (simplifié)
+# Modele final BIC 
 modele <- modele_bic
 
 
