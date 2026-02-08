@@ -1,3 +1,8 @@
+############################################
+#  Partie Israe  EDA 
+##########################################
+
+
 # Nettoyage de l'environnement
 rm(list = ls())
 
@@ -141,8 +146,13 @@ cor_matrix <- cor(num_vars, use = "complete.obs") # ignore les NAs
 ggcorrplot(cor_matrix, lab = TRUE, colors = c("blue", "white", "red"))
 
 
+
+#================================
+# Partie fatima raouane
+#================================
+
 #########################################################################
-## AXE 3 : ÉTUDE DU DÉLAI DE RÉSERVATION (MODÈLE GAMMA)
+## AXE 3 : ÉTUDE DU DÉLAI DE RÉSERVATION (MODÈLE GAMMA) 
 #########################################################################
 
 # 0. PRÉPARATION DES DONNÉES
@@ -364,6 +374,7 @@ for(pred in predictors){
     lines(lowess(data_gamma[[pred]], resid_std), col='red', lwd=2)
   }
 }
+
 predic<-"market_segment"
 boxplot(resid_std ~ data_gamma[[predic]], main=paste("Residuals vs", pred))
 
@@ -477,10 +488,6 @@ pseudoR2 <- 1 - res_dev/null_dev
 pseudoR2
 
 
-library(DHARMa)
-
-sim_res <- simulateResiduals(fittedModel = modele)
-plot(sim_res)
 
 
 
