@@ -279,10 +279,11 @@ hist(residus_std, breaks = 30, main = "Distribution des résidus", col = "lightg
 
 
 ####################################################################
+# Partie Youssefi Nouhaila inspire du livre Springer Texts in Statistics
+# Generalized Linear Models With Examples in R 
 ####################################################################
 # ===============================================
 # Diagnostics GLM Gamma pour lead_time_gamma
-# Inspiré de Horvath (2019), adapté à ton projet
 # ===============================================
 
 library(ggplot2)
@@ -294,22 +295,21 @@ library(car)       # pour vif()
 # Modèle final BIC (simplifié)
 modele <- modele_bic
 
-# -------------------------------
-# 1. Résidus de base
-# -------------------------------
-
 
 # -------------------------------
 # 2. Vérification des densités
 # -------------------------------
 
- # Calculer les densités
+ # Calculer les densites
+
 dens_obs <- density(data_gamma$lead_time_gamma)
 dens_fitted <- density(predict(modele, type='response'))
 
-# Définir la limite Y en prenant le maximum des deux densités
+# def limite Y en prenant le max des deux densites
 ymax <- max(dens_obs$y, dens_fitted$y) * 1.1 
-# Plot avec axes ajustés
+
+# plot avec axes ajustes
+
 plot(dens_obs, main="Density of observed lead_time_gamma",
      ylim=c(0, ymax))
 lines(dens_fitted, col='red', lwd=2)
@@ -477,7 +477,10 @@ pseudoR2 <- 1 - res_dev/null_dev
 pseudoR2
 
 
+library(DHARMa)
 
+sim_res <- simulateResiduals(fittedModel = modele)
+plot(sim_res)
 
 
 

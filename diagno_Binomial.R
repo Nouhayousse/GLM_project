@@ -1,3 +1,8 @@
+
+####################################
+# Partie Doha , modele GLM binomial
+################################################
+
 library(readxl)
 library(tidyverse)
 library(corrplot) # Pour les matrices de corrélation
@@ -5,8 +10,7 @@ library(caret)    # Pour la division train/test et matrice de confusion
 library(pROC)     # Pour la courbe ROC
 
 
-# Liste des feuilles
-excel_sheets("Projet_GLM_IDSI2.xlsx")
+
 
 # Charger une seule feuille
 data <- read_excel(file.choose())
@@ -316,25 +320,16 @@ plot(fitted(model_full), rps)
 
 
 
-
-
-
-
-
-
-
-
-
+#############################################################
+#DIAGNOSTICS POUR BINOMIAL [Partie Youssefi Nouhaila]
 ###############################################################
-#DIAGNOSTICS POUR BINOMIAL
 
-###############################################################
 model <- model_final
 
-# Résidus standardisés (déviance)
+# residus standardises
 resid_std <- rstandard(model)
 
-# Valeurs ajustées (probabilités)
+# Valeurs ajustees 
 fitted_vals <- fitted(model)
 
 
@@ -362,7 +357,8 @@ lines(lowess(seq_along(resid_std), resid_std), col = "red", lwd = 2)
 
 
 
-
+acf(resid_std)
+pacf(resid_std)
 
 vars_cont <- c("Nuits_Weekend",
                "Delai_Reservation",
